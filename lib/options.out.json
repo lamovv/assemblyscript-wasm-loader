@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "default": "[name].[hash:7].wasm"
+    },
+    "context": {
+      "type": "string"
+    },
+    "publicPath": {
+      "type": "string"
+    },
+    "outputPath": {},
+    "useRelativePath": {
+      "type": "boolean"
+    },
+    "emitFile": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,44 @@
+{
+  "name": "assemblyscript-wasm-loader",
+  "version": "0.1.0",
+  "description": "A webpack loader that compiles AssemblyScript to WebAssembly.",
+  "keywords": [
+    "webpack",
+    "loader",
+    "AssemblyScript",
+    "WebAssembly"
+  ],
+  "homepage": "https://github.com/lamovv/assemblyscript-wasm-loader",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "type": "commonjs",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/lamovv/assemblyscript-wasm-loader.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lamovv/assemblyscript-wasm-loader/issues"
+  },
+  "dependencies": {
+    "@assemblyscript/loader": "^0.9.4",
+    "assemblyscript": "^0.9.4",
+    "loader-utils": "^2.0.0",
+    "schema-utils2": "^2.6.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}
