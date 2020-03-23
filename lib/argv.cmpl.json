@@ -1,10 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "limit": {
-      "description": "Byte limit the size to the wasm file: size <= limit, wasm bundled into js ,or builded into output.wasm",
-      "type": ["number"]
-    },
     "prefix": {
       "type": "string"
     },
@@ -15,8 +11,9 @@
       "type": "string"
     },
     "optimize": {
-      "type": "string",
-      "alias": "O"
+      "type": "boolean",
+      "alias": "O",
+      "default": true
     },
     "optimizeLevel": {
       "description": "How much to focus on optimizing code. [0-3]",
@@ -30,11 +27,12 @@
       "description": "Validates the module using Binaryen. Exits if invalid.",
       "type": "boolean",
       "alias": "c",
-      "default": false
+      "default": true
     },
     "sourceMap": {
       "description": "Enables source map generation.",
-      "type": ["string", "boolean"]
+      "type": "boolean",
+      "default": true
     },
     "debug": {
       "description": "Enables debug information in emitted binaries.",
@@ -70,6 +68,11 @@
       "description": "Imports the function table instance provided by the embedder.",
       "type": "boolean",
       "default": false
+    },
+    "tableBase": {
+      "description": "Sets the start offset of emitted table elements.",
+      "type": "number",
+      "default": 0
     },
     "noLib": {
       "description": "Does not include the shipped standard library.",

@@ -9,7 +9,7 @@
 $> npm install assemblyscript-wasm-loader
 ```
 
-1. webpack 配置
+2. webpack 配置
 
 ```javascript
 {
@@ -17,23 +17,70 @@ $> npm install assemblyscript-wasm-loader
   loader: 'assemblyscript-wasm-loader',
   include: /assembly/,
   options: {
-    // 构建出的wasm大小决定是否build in Build的限制(阈值，单位byte), <= limit即打入Bundle，反之，构建独立 name.wasm 文件
-    limit: 61440,
-    name: '[name].[hash:8].wasm',
-    sourceMap: true
+    //关键配置，是否打进Bundle
+    limit: 61440, // wasm size 阈值(单位byte)，是否build in Bundle,size <= limit即打入Bundle，反之生成name.wasm 文件
+    // sourceMap: true,
+    // debug: true
   }
 }
 ```
 
-2. 应用
+3. 开发代码
+
+// assembly/index.ts
 
 ```js
-const utilImports = {
+// the env from JS
+@external('env', 'log')
+export declare function logi(v: i32): void;
+@external('env', 'log')
+export declare function logs(a: string): void;
+@external('env', 'log')
+export declare function logss(a: string, b: string): void;
+@external('env', 'gValue')
+export declare const gValue:i32;
+
+/**
+ *  @return
+ *  - a > b ，return 1
+ *  - a = b ，return 0
+ *  - a < b ，return -1
+ */
+export function compareVersion(va: string, vb: string, digit: i8 = 3): i8 {
+  logi(gValue);
+  logss(va, vb);
+  
+  if(!va && !vb){
+    return 0;
+  }else if(!va){
+    return -1;
+  }else if(!vb){
+    return 1;
+  }
+
+  const aArr: string[] = va.split('.');
+  const bArr: string[] = vb.split('.');
+
+  let i = -1;
+  while(++i < digit){
+    if(aArr[i] > bArr[i]){
+      return 1;
+    }else if(aArr[i] < bArr[i]){
+      return -1;
+    }
+  }
+
+  return 0;
+}
+```
+
+// demo/index.js
+
+```js
+const imports = {
   env: {
     gValue: 666,
     log: console.log,
-    memory: new WebAssembly.Memory({initial: 10}),
-    table: new WebAssembly.Table({initial: 1, element: 'anyfunc'}),
     abort: function abort(message, source, lineno, colno) {
       const memory = env.memory;
       throw Error(`abort: ${getString(memory, mesg)} at ${getString(memory, file)}:${lineno}:${colno}`);
@@ -41,6 +88,7 @@ const utilImports = {
   }
 };
 
+// module挂载API参照 [@assemblyscript/loader](https://web.npm.alibaba-inc.com/package/@assemblyscript/loader)
 const cback = utilMod => {
   let { 
   compareVersion, 
@@ -64,20 +112,12 @@ const cback = utilMod => {
   __release(vb);
 };
 
-//下个版本优化loader，集成此依赖
-import loader from '@assemblyscript/loader';
-import init from '../assembly/index.ts';
-
-init(utilImports).then(({ instance, module }) => {
-  loader.instantiate(module, utilImports).then(utilMod => {
-    cback(utilMod);
-  });
-});
+//关键用法
+import instantiate from '../assembly/index.ts';
+instantiate(utilImports).then(utilMod => {
+  cback(utilMod);
+}).catch(e => console.error(e));
 ```
-
-- 编译与实例化WebAssembly模块
-  - Build in Bundle时，使用 `Promise<ResultObject> WebAssembly.instantiate(bufferSource, importObject);`
-  - 获取(fetch)时，使用 `Promise<ResultObject> WebAssembly.instantiateStreaming(source, importObject);`
 
 - Promise.reject，根据失败的原因不同，当前有 3 类异常：
   - [WebAssembly.CompileError](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/CompileError)

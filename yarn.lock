@@ -92,9 +92,9 @@ punycode@^2.1.0:
   integrity sha1-tYsBCsQMIsVldhbI0sLALHv0eew=
 
 schema-utils2@^2.6.5:
-  version "2.6.5"
-  resolved "https://registry.npm.alibaba-inc.com/schema-utils2/download/schema-utils2-2.6.5.tgz#c5c15822942bcf1152c71cee646d3363f337506f"
-  integrity sha1-xcFYIpQrzxFSxxzuZG0zY/M3UG8=
+  version "2.6.7"
+  resolved "https://registry.npm.alibaba-inc.com/schema-utils2/download/schema-utils2-2.6.7.tgz#d29c7e18b6268dee32f0356a293d4b9bccd00975"
+  integrity sha1-0px+GLYmje4y8DVqKT1Lm8zQCXU=
   dependencies:
     ajv "^6.12.0"
     ajv-keywords "^3.4.1"

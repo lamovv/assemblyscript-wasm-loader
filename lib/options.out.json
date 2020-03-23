@@ -1,6 +1,10 @@
 {
   "type": "object",
   "properties": {
+    "limit": {
+      "type": ["number"],
+      "description": "Byte limit the size to the wasm file: size <= limit, wasm bundled into js ,or builded into output.wasm"
+    },
     "name": {
       "type": "string",
       "default": "[name].[hash:7].wasm"
