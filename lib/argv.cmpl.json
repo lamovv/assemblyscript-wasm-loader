@@ -11,27 +11,14 @@
       "type": "string"
     },
     "optimize": {
-      "type": "boolean",
+      "type": "string",
       "alias": "O",
-      "default": true
-    },
-    "optimizeLevel": {
-      "description": "How much to focus on optimizing code. [0-3]",
-      "type": "number"
-    },
-    "shrinkLevel": {
-      "description": "How much to focus on shrinking code size. [0-2, s=1, z=2]",
-      "type": "number"
+      "default": "2s"
     },
     "validate": {
       "description": "Validates the module using Binaryen. Exits if invalid.",
       "type": "boolean",
       "alias": "c",
-      "default": true
-    },
-    "sourceMap": {
-      "description": "Enables source map generation.",
-      "type": "boolean",
       "default": true
     },
     "debug": {
@@ -85,10 +72,6 @@
     "use": {
       "type": "string",
       "alias": "u"
-    },
-    "trapMode": {
-      "type": "string",
-      "default": "allow"
     },
     "runPasses": {
       "type": "string"

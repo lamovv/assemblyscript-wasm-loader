@@ -3,10 +3,10 @@
 > A webpack loader that compiles AssemblyScript to WebAssembly.
 
 ## Usage
-1. install
+1. 安装依赖
 
 ```bash
-$> npm install assemblyscript-wasm-loader
+$ yarn add assemblyscript-wasm-loader
 ```
 
 2. webpack 配置
@@ -17,17 +17,37 @@ $> npm install assemblyscript-wasm-loader
   loader: 'assemblyscript-wasm-loader',
   include: /assembly/,
   options: {
-    //关键配置，是否打进Bundle
-    limit: 61440, // wasm size 阈值(单位byte)，是否build in Bundle,size <= limit即打入Bundle，反之生成name.wasm 文件
-    // sourceMap: true,
-    // debug: true
+    limit: 61440, // 编译的 wasm size 阈值(单位byte)，size <= limit build in Bundle；size > limit 生成 wasm 文件
+    optimize: '3z', // 编译优化，默认 2s
+    // measure: true, // Prints measuring information on I/O and compile times
   }
 }
 ```
 
-3. 开发代码
+优化项对应的配置
 
-// assembly/index.ts
+```json
+{
+  "-Os": { "value": { "optimize": true, "shrinkLevel": 1 } },
+  "-Oz": { "value": { "optimize": true, "shrinkLevel": 2 } },
+  "-O0": { "value": { "optimizeLevel": 0, "shrinkLevel": 0 } },
+  "-O1": { "value": { "optimizeLevel": 1, "shrinkLevel": 0 } },
+  "-O2": { "value": { "optimizeLevel": 2, "shrinkLevel": 0 } },
+  "-O3": { "value": { "optimizeLevel": 3, "shrinkLevel": 0 } },
+  "-O0s": { "value": { "optimizeLevel": 0, "shrinkLevel": 1 } },
+  "-O1s": { "value": { "optimizeLevel": 1, "shrinkLevel": 1 } },
+  "-O2s": { "value": { "optimizeLevel": 2, "shrinkLevel": 1 } },
+  "-O3s": { "value": { "optimizeLevel": 3, "shrinkLevel": 1 } },
+  "-O0z": { "value": { "optimizeLevel": 0, "shrinkLevel": 2 } },
+  "-O1z": { "value": { "optimizeLevel": 1, "shrinkLevel": 2 } },
+  "-O2z": { "value": { "optimizeLevel": 2, "shrinkLevel": 2 } },
+  "-O3z": { "value": { "optimizeLevel": 3, "shrinkLevel": 2 } }
+}
+```
+
+3. 开发代码，（如下示例）
+
+//assembly/index.ts
 
 ```js
 // the env from JS
@@ -112,41 +132,41 @@ const cback = utilMod => {
   __release(vb);
 };
 
-//关键用法
 import instantiate from '../assembly/index.ts';
 instantiate(utilImports).then(utilMod => {
   cback(utilMod);
 }).catch(e => console.error(e));
 ```
 
+## 其他
 - Promise.reject，根据失败的原因不同，当前有 3 类异常：
   - [WebAssembly.CompileError](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/CompileError)
   - [WebAssembly.LinkError](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/LinkError)
   - [WebAssembly.RuntimeError](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/RuntimeError)
 
-## importsObject 配置
-WebAssembly的实例化方法，可导入 4 种类型：
+- importsObject 配置，WebAssembly的实例化方法，可导入 4 种类型：
+  - values
+  - function
+  - memory(JS与Wasm间内存共享)
+  - tables(主要用于函数引用)
 
-- values
-- function
-- memory(JS与Wasm间内存共享)
-- tables(主要用于函数引用)
+  注：wasm模块中，若导入值，要与之匹配的属性对应，否则会抛出 [WebAssembly.LinkError](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/LinkError)。
 
-wasm模块中，若导入值，要与之匹配的属性对应，否则会抛出 [WebAssembly.LinkError](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/LinkError)。
+  Demo：
 
-```javascript
-const utilImports = {
-  env: {
-    gValue: 666,
-    log: console.log,
-    //以wasm页(64K)为单位，初始640K，不必要配置最大限制
-    memory: new WebAssembly.Memory({initial: 10}),
-    //初始指定1个长度，不必要配置最大限制；存储对象的类型目前只支持函数
-    table: new WebAssembly.Table({initial: 1, element: 'anyfunc'}),
-    abort: function abort(message, source, lineno, colno) {
-      const memory = env.memory;
-      throw Error(`abort: ${getString(memory, mesg)} at ${getString(memory, file)}:${lineno}:${colno}`);
+  ```javascript
+  const utilImports = {
+    env: {
+      gValue: 666,
+      log: console.log,
+      //以wasm页(64K)为单位，初始640K，不必要配置最大限制
+      memory: new WebAssembly.Memory({initial: 10}),
+      //初始指定1个长度，不必要配置最大限制；存储对象的类型目前只支持函数
+      table: new WebAssembly.Table({initial: 1, element: 'anyfunc'}),
+      abort: function abort(message, source, lineno, colno) {
+        const memory = env.memory;
+        throw Error(`abort: ${getString(memory, mesg)} at ${getString(memory, file)}:${lineno}:${colno}`);
+      }
     }
-  }
-};
-```
+  };
+  ```
