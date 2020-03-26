@@ -1,6 +1,6 @@
 {
   "name": "assemblyscript-wasm-loader",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A webpack loader that compiles AssemblyScript to WebAssembly.",
   "keywords": [
     "webpack",
@@ -17,10 +17,7 @@
     "test": "__tests__"
   },
   "files": [
-    "lib",
-    "package.json",
-    "README.md",
-    "LICENSE"
+    "lib"
   ],
   "engines": {
     "node": ">=8"
