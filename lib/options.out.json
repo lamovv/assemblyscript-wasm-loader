@@ -12,10 +12,6 @@
     "context": {
       "type": "string"
     },
-    "publicPath": {
-      "type": "string"
-    },
-    "outputPath": {},
     "useRelativePath": {
       "type": "boolean"
     },
