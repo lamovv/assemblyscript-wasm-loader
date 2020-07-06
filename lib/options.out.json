@@ -12,6 +12,8 @@
     "context": {
       "type": "string"
     },
+    "publicPath":{},
+    "outputPath":{},
     "useRelativePath": {
       "type": "boolean"
     },
