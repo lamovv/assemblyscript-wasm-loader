@@ -15,12 +15,6 @@
       "alias": "O",
       "default": "2s"
     },
-    "validate": {
-      "description": "Validates the module using Binaryen. Exits if invalid.",
-      "type": "boolean",
-      "alias": "c",
-      "default": true
-    },
     "debug": {
       "description": "Enables debug information in emitted binaries.",
       "type": "boolean",

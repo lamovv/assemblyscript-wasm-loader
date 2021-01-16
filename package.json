@@ -1,6 +1,6 @@
 {
   "name": "assemblyscript-wasm-loader",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "A webpack loader that compiles AssemblyScript to WebAssembly.",
   "keywords": [
     "webpack",
@@ -12,10 +12,6 @@
   "license": "MIT",
   "main": "lib/index.js",
   "type": "commonjs",
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
   "files": [
     "lib"
   ],
@@ -30,12 +26,12 @@
     "url": "https://github.com/lamovv/assemblyscript-wasm-loader/issues"
   },
   "dependencies": {
-    "@assemblyscript/loader": "^0.9.4",
-    "assemblyscript": "^0.9.4",
+    "@assemblyscript/loader": "^0.17.13",
+    "assemblyscript": "^0.17.13",
     "loader-utils": "^2.0.0",
     "schema-utils2": "^2.6.5"
   },
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   }
 }
