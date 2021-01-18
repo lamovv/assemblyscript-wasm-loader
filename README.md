@@ -6,8 +6,16 @@
 1. 安装依赖
 
 ```bash
-$ yarn add assemblyscript-wasm-loader
+$ yarn add assemblyscript-wasm-loader -D
 ```
+
+  - 注：可配置源地址加快yarn下包效率：`yarn config set registry https://registry.npm.taobao.org`，同时在待发npm包`package.json`增加配置：
+
+    ```json
+    "publishConfig": {
+      "registry": "https://registry.npmjs.org"
+    }
+    ```
 
 2. webpack 配置
 
@@ -17,7 +25,7 @@ $ yarn add assemblyscript-wasm-loader
   loader: 'assemblyscript-wasm-loader',
   include: /assembly/,
   options: {
-    limit: 61440, // 编译的 wasm size 阈值(单位byte)，size <= limit build in Bundle；size > limit 生成 wasm 文件
+    limit: 61440, // 编译的 wasm size 阈值(单位byte)，size <= limit build in Bundle；size > limit 生成 .wasm 文件
     optimize: '3z', // 编译优化，默认 2s
     // measure: true, // Prints measuring information on I/O and compile times
   }
@@ -45,31 +53,18 @@ $ yarn add assemblyscript-wasm-loader
 }
 ```
 
-3. 开发代码，（如下示例）
+3. 开发代码，（如下示例）。也可直接安装 `@ufly/cli` 生成开发环境
 
-//assembly/index.ts
+// src/assembly/index.ts
 
 ```js
-// the env from JS
-@external('env', 'log')
-export declare function logi(v: i32): void;
-@external('env', 'log')
-export declare function logs(a: string): void;
-@external('env', 'log')
-export declare function logss(a: string, b: string): void;
-@external('env', 'gValue')
-export declare const gValue:i32;
+// import the JS API by env
+@external('env', 'logi')
+declare function logi(v: i64): void;
+@external('env', 'logd')
+declare function logd(s: string, i: i64): void;
 
-/**
- *  @return
- *  - a > b ，return 1
- *  - a = b ，return 0
- *  - a < b ，return -1
- */
 export function compareVersion(va: string, vb: string, digit: i8 = 3): i8 {
-  logi(gValue);
-  logss(va, vb);
-  
   if(!va && !vb){
     return 0;
   }else if(!va){
@@ -89,53 +84,77 @@ export function compareVersion(va: string, vb: string, digit: i8 = 3): i8 {
       return -1;
     }
   }
-
   return 0;
 }
 ```
 
-// demo/index.js
+// src/index.js
 
 ```js
-const imports = {
+import instantiate from './assembly/index.ts';
+
+let wasmModulePromise;
+// 共享内存
+const testImports = {
   env: {
-    gValue: 666,
-    log: console.log,
-    abort: function abort(message, source, lineno, colno) {
-      const memory = env.memory;
-      throw Error(`abort: ${getString(memory, mesg)} at ${getString(memory, file)}:${lineno}:${colno}`);
+    logi: console.log,
+    logd(s, num){ // log debug
+      wasmModulePromise.then(({exports}) => {
+        const str = exports.__getString(s);
+        console.log(str, num);
+      });
     }
   }
 };
 
-// module挂载API参照 [@assemblyscript/loader](https://web.npm.alibaba-inc.com/package/@assemblyscript/loader)
-const cback = utilMod => {
-  let { 
-  compareVersion, 
-  __allocString,
-  __retain, 
-  __release 
-} = utilMod;
+// Promise<fooModule>
+wasmModulePromise = instantiate(testImports);
 
-  const a = '1.2.0';
-  const b = '1.2.1';
-  const va = __retain(__allocString(a));
-  const vb = __retain(__allocString(b));
+/**
+ * @param {string} a
+ * @param {string} b
+ * @param {number=} digit
+ * @returns {Promise<number>}
+ */
+export async function compareVersion(a, b, digit=3) {
+  return wasmModulePromise.then(({ exports }) => {
+    // 使用 exports 上挂载的实用方法获取 JS ”对象“数据内存地址，供 Wasm 使用: https://www.assemblyscript.org/loader.html#module-instance-utility
+    let { compareVersion, __newString } = exports;
+    // JS 只需将参数直接透传给 Wasm 即可
+    const va = __newString(a);
+    const vb = __newString(b);
 
-  const r = compareVersion(va, vb);
+    return compareVersion(va, vb, digit);
+  }).catch(e){
+    console.error('Error:', e);
+  };
+}
 
-  console.log(
-    `%c 版本 ${a} 比版本 ${b} ${{ 0: '相等', 1: '大', '-1': '小' }[r]}`,
-    'color:#0f0;'
-  );
-  __release(va);
-  __release(vb);
-};
+export default wasmModulePromise;
+```
 
-import instantiate from '../assembly/index.ts';
-instantiate(utilImports).then(utilMod => {
-  cback(utilMod);
-}).catch(e => console.error(e));
+// demo/index.js
+```js
+import wasmModulePomise, {
+  compareVersion
+} from '../src/index.js';
+
+wasmModPromise.then(({ exports }) => {
+  // https://www.assemblyscript.org/loader.html#module-instance-utility
+  let { compareVersion, __newString } = exports;
+
+  let a2;
+  let b2;
+  const ts = Date.now();
+
+  for(var j=0; j< 100000; j++){
+    a2 = __newString(`1.2.${j}`);
+    b2 = __newString('1.2.100');
+    compareVersion(a2, b2);
+  }
+  const te = Date.now();
+  console.log('js-wasm', te - ts);
+});
 ```
 
 ## 其他
@@ -152,7 +171,7 @@ instantiate(utilImports).then(utilMod => {
 
   注：wasm模块中，若导入值，要与之匹配的属性对应，否则会抛出 [WebAssembly.LinkError](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/LinkError)。
 
-  Demo：
+  JS ：
 
   ```javascript
   const utilImports = {
